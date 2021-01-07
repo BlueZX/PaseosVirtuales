@@ -9,12 +9,17 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageButton;
 
 import com.example.paseosvirtuales.helper.CameraPermissionHelper;
+import com.example.paseosvirtuales.helper.DataModel;
 import com.example.paseosvirtuales.helper.DepthSettings;
 import com.example.paseosvirtuales.helper.SnackbarHelper;
 import com.example.paseosvirtuales.helper.TrackingStateHelper;
+import com.example.paseosvirtuales.helper.getDataHelper;
 import com.example.paseosvirtuales.renderer.BackgroundRenderer;
 
 import com.example.paseosvirtuales.renderer.Texture;
@@ -38,6 +43,7 @@ import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 
@@ -58,6 +64,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
     private Config mDefaultConfig;
     private Session mSession;
     private BackgroundRenderer mBackgroundRenderer = new BackgroundRenderer();
+    private GestureDetector mGestureDetector;
     private final TrackingStateHelper mTrackingStateHelper = new TrackingStateHelper(this);
 
     @Override
@@ -67,7 +74,14 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
         mSurfaceView = findViewById(R.id.surfaceview);
 
-        // Configurar renderer.
+        String jsonFileString = getDataHelper.getJsonFromAssets(getApplicationContext(), "sampledata/dataObj.json");
+        Log.i("dataJSON", jsonFileString);
+
+        Gson gson = new Gson();
+        DataModel dataTest = gson.fromJson(jsonFileString, DataModel.class);
+        Log.i("dataJSON", "x: "+ dataTest.location.x + ", y: " + dataTest.location.y);
+
+        // Configurar el renderer.
         mSurfaceView.setPreserveEGLContextOnPause(true);
         mSurfaceView.setEGLContextClientVersion(2);
         mSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0); // Alpha used for plane blending.
@@ -75,9 +89,35 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         mSurfaceView.setWillNotDraw(false);
 
+
         installRequested = false;
 
+        // Configuracion de tocar listener
+        mGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener(){
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                Log.d("Toque","toque aqui");
+                return true;
+            }
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return true;
+            }
+        });
+
+        mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return mGestureDetector.onTouchEvent(event);
+            }
+        });
+
         depthSettings.onCreate(this);
+
+        //interfaz
+        ImageButton settingsButton = findViewById(R.id.settings_button);
+        ImageButton backButton = findViewById(R.id.back_button);
 
     }
 
@@ -261,7 +301,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
         }
         catch (Throwable t) {
-            // Hya que evitar bloquear la aplicación por excepciones no controladas.
+            // para evitar bloquear la aplicación por excepciones no controladas.
             Log.e(TAG, "Exception en el hilo del OpenGL", t);
         }
 

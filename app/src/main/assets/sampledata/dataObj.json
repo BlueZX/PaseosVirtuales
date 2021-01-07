@@ -1,0 +1,17 @@
+{
+    "location": {
+        "x": -37.2637696,
+        "y":-72.7089152,
+        "z":12
+    },
+    "model": {
+        "obj": "aqui el objeto",
+        "texture": "aqui textura",
+        "shadow": "shadow"
+    },
+    "data": {
+        "name": "Andy",
+        "description": "Lorem ipsum",
+        "dateMonument": "fecha"
+    }
+}

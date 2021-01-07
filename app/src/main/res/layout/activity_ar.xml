@@ -12,5 +12,24 @@ tools:context="com.example.paseosvirtuales.activity.ARActivity">
     android:layout_height="fill_parent"
     android:layout_gravity="top" />
 
+<ImageButton
+    android:id="@+id/settings_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:layout_margin="30dp"
+    android:src="@drawable/ic_baseline_settings_24"
+    android:background="@android:color/transparent"/>
+
+<ImageButton
+    android:id="@+id/back_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="false"
+    android:layout_alignParentTop="true"
+    android:layout_margin="30dp"
+    android:src="@drawable/ic_baseline_arrow_back_24"
+    android:background="@android:color/transparent"/>
 </RelativeLayout>
 
