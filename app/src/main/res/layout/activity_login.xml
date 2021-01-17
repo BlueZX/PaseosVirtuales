@@ -17,6 +17,7 @@
         android:orientation="vertical">
 
         <ImageButton
+            android:id="@+id/btn_close_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_close_36"
@@ -28,6 +29,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textFontWeight="600"
             android:layout_marginHorizontal="30dp"
             android:layout_weight="10"
             android:orientation="vertical">
@@ -65,13 +67,13 @@
                     android:textColor="@color/gray1"
                     android:gravity="center_vertical"/>
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/et_login_email"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     app:endIconMode="clear_text">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_login_email"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress" />
@@ -96,13 +98,13 @@
                     android:textColor="@color/gray1"
                     android:gravity="center_vertical"/>
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/et_login_password"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     app:endIconMode="password_toggle">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_login_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword" />
@@ -116,8 +118,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:ems="11"
-                android:background="@drawable/button_rounder"
-                android:backgroundTint="@color/colorPrimary"
+                android:background="@drawable/button_animated"
                 android:text="Ingresar" />
         </LinearLayout>
 
