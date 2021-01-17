@@ -27,18 +27,32 @@ android {
 }
 
 dependencies {
+    // Java
     implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    // Android
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation "androidx.core:core-ktx:+"
     implementation "com.google.android.material:material:+"
 
-    implementation 'com.google.code.gson:gson:2.8.6'
-
+    // ARCore
     implementation 'com.google.ar:core:1.20.0'
 
+    // RetroFit
+    implementation "com.squareup.retrofit2:retrofit:2.7.1"
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation "com.squareup.okhttp3:logging-interceptor:4.0.0"
+
+    // OBJ
     implementation 'de.javagl:obj:0.2.1'
 
+    //Mapa y localizacion
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.maps.android:maps-utils-ktx:0.2'
+
+    // Testing
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

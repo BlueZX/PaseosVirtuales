@@ -10,24 +10,23 @@ import android.provider.Settings;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-// Helper para preguntar los permisos de la camara.
-public final class CameraPermissionHelper {
-    private static final int CAMERA_PERMISSION_CODE = 0;
-    private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
+public final class LocationPermissionHelper {
+    public static final int LOCATION_PERMISSIONS_CODE = 99;
+    private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
 
-    // Verifica que se tenga los permisos concedidos para ocupar la camara en la aplicación.
-    public static boolean hasCameraPermission(Activity activity) {
-        return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED;
+    // Verifica que se tenga los permisos concedidos para ocupar la localización en la aplicación.
+    public static boolean hasLocationPermission(Activity activity) {
+        return ContextCompat.checkSelfPermission(activity, LOCATION_PERMISSION) == PackageManager.PERMISSION_GRANTED;
     }
 
     // Verifica que se tenga los permisos necesarios ocupar la aplicación, en caso de no poseerlos los solicita
-    public static void requestCameraPermission(Activity activity) {
-        ActivityCompat.requestPermissions(activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
+    public static void requestLocationPermission(Activity activity) {
+        ActivityCompat.requestPermissions(activity, new String[] {LOCATION_PERMISSION}, LOCATION_PERMISSIONS_CODE);
     }
 
-    // Verifica si se necesita mostrar por que se necesita el permiso de la camara
+    // Verifica si se necesita mostrar por que se necesita el permiso de la localizacion
     public static boolean shouldShowRequestPermissionRationale(Activity activity) {
-        return ActivityCompat.shouldShowRequestPermissionRationale(activity, CAMERA_PERMISSION);
+        return ActivityCompat.shouldShowRequestPermissionRationale(activity, LOCATION_PERMISSION);
     }
 
     // Inicia la configuracion de la aplicacion para dar el permiso.
@@ -37,4 +36,6 @@ public final class CameraPermissionHelper {
         intent.setData(Uri.fromParts("package", activity.getPackageName(), null));
         activity.startActivity(intent);
     }
+
+
 }

@@ -24,14 +24,14 @@ import com.google.ar.core.TrackingState;
 /** Gets human readibly tracking failure reasons and suggested actions. */
 public final class TrackingStateHelper {
   private static final String INSUFFICIENT_FEATURES_MESSAGE =
-      "Can't find anything. Aim device at a surface with more texture or color.";
-  private static final String EXCESSIVE_MOTION_MESSAGE = "Moving too fast. Slow down.";
+      "No se puede encontrar nada. Apunte el dispositivo a una superficie con más textura o color.";
+  private static final String EXCESSIVE_MOTION_MESSAGE = "Te estás moviendo muy rapido. porfavor, mueve tu celular más lento.";
   private static final String INSUFFICIENT_LIGHT_MESSAGE =
-      "Too dark. Try moving to a well-lit area.";
+      "Muy oscuro, muevete a un lugar mas iluminado";
   private static final String BAD_STATE_MESSAGE =
-      "Tracking lost due to bad internal state. Please try restarting the AR experience.";
+      "Seguimiento perdido debido a un mal funcionamiento del dispositivo o la aplicación. Intente reiniciar la experiencia de RA.";
   private static final String CAMERA_UNAVAILABLE_MESSAGE =
-      "Another app is using the camera. Tap on this app or try closing the other one.";
+      "Otra aplicacion esta ocupando la camara. Toca aquí o intenta cerrando la otra aplicación.";
 
   private final Activity activity;
 
@@ -77,6 +77,6 @@ public final class TrackingStateHelper {
       case CAMERA_UNAVAILABLE:
         return CAMERA_UNAVAILABLE_MESSAGE;
     }
-    return "Unknown tracking failure reason: " + reason;
+    return "Error de seguimiento desconocido. ocasionado por: " + reason;
   }
 }
