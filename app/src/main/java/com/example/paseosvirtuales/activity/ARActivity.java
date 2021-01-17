@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Range;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.ImageButton;
 import android.renderscript.Float3;
@@ -33,7 +32,6 @@ import com.example.paseosvirtuales.renderer.BackgroundRenderer;
 
 import com.example.paseosvirtuales.renderer.ObjectRenderer;
 import com.example.paseosvirtuales.renderer.Texture;
-import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
@@ -65,56 +63,31 @@ import java.util.Objects;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.content.Context.SENSOR_SERVICE;
-
 public class ARActivity extends AppCompatActivity implements GLSurfaceView.Renderer, SensorEventListener, LocationListener {
 
     private static final String TAG = ARActivity.class.getSimpleName();
-    private GLSurfaceView surfaceView;
+
+    private final ObjectRenderer virtualObject = new ObjectRenderer();
+    private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
     private final DepthSettings depthSettings = new DepthSettings();
-
-    private SensorManager sensorManager;
-    private LocationManager locationManager;
-    private Location location;
-
-    private boolean installRequested;
-    private boolean flagGPSEnabled;
-    private boolean flagNetworkEnabled;
-    private boolean locationServiceAvailable;
-    private DataModel dataTest;
-    private List<DataModel> modelsList;
-
     private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
     private final Texture depthTexture = new Texture();
-
-    private Config defaultConfig;
-    private TapHelper tapHelper;
-    private Session session;
-    private BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
-    private final ObjectRenderer virtualObject = new ObjectRenderer();
-    private GestureDetector gestureDetector;
-    private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
-
     private final float[] anchorMatrix = new float[16];
-    private float[] zeroMatrix = new float[16];
-    private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
 
+    private Session session;
+    private GLSurfaceView surfaceView;
+    private SensorManager sensorManager;
+    private Location location;
+    private List<DataModel> modelsList;
+    private TapHelper tapHelper;
+
+    private float[] zeroMatrix = new float[16];
     private float[] translation = new float[]{0.0f, -0.8f, -0.8f};
     private float[] rotation = new float[]{0.0f, -1.00f, 0.0f, 0.3f};
-
     private Pose poseAR = new Pose(translation, rotation);
+    private BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
 
-    private static class ColoredAnchor {
-        public final Anchor anchor;
-        public final float[] color;
-
-        public ColoredAnchor(Anchor a, float[] color4f) {
-            this.anchor = a;
-            this.color = color4f;
-        }
-    }
-
-    private final ArrayList<ColoredAnchor> anchors = new ArrayList<>();
+    private boolean installRequested;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -130,10 +103,11 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         modelsList = new ArrayList<>();
 
         String jsonFileString = getDataHelper.getJsonFromAssets(getApplicationContext(), "sampledata/dataObj.json");
+        assert jsonFileString != null;
         Log.i("dataJSON", jsonFileString);
 
         Gson gson = new Gson();
-        dataTest = gson.fromJson(jsonFileString, DataModel.class);
+        DataModel dataTest = gson.fromJson(jsonFileString, DataModel.class);
         dataTest.location.setLocation(dataTest.location.lat, dataTest.location.lon);
         Log.i("dataJSON", "latitud: "+ dataTest.location.lat + ", longitud: " + dataTest.location.lon);
         modelsList.add(dataTest);
@@ -229,7 +203,6 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
             }
         }
 
-        // el orden es importante: consulte la nota en onPause(), aquí se aplica lo contrario.
         try {
             session.resume();
         } catch (CameraNotAvailableException e) {
@@ -239,7 +212,6 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         }
 
         surfaceView.onResume();
-        //displayRotationHelper.onResume();
     }
 
     private void handleLocationServices(){
@@ -249,34 +221,22 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         }
 
         try {
-            locationManager = (LocationManager) this.getSystemService(this.LOCATION_SERVICE);
+            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
             //Se verifica que se tenga activado las funciones de GPS y el estado de su conexion a internet
-            flagGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            flagNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            boolean flagGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean flagNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-            if (!flagGPSEnabled && !flagNetworkEnabled) {
-                // GPS y conexion a internet activados
-                locationServiceAvailable = true;
-            }
-            else{
-                // no se puede obtener la localizacion o la conexion a internet en el dispositivo
-                locationServiceAvailable = false;
-            }
-
-            if (flagGPSEnabled) {
+            //se obtiene la ultim,a localizaciopn obtenida por medio del internet
+            if (flagNetworkEnabled) {
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-                if (locationManager != null) {
-                    location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                }
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             }
 
+            //se obtienen la ultima localizacion obtenida por medio del sensor GPS
             if (flagGPSEnabled) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-
-                if (locationManager != null) {
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                }
+                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             }
 
         }
@@ -288,14 +248,11 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
     }
 
+    //se pausa la sesion y lo que se encuentre en la pantalla, solo si la sesion existe
     @Override
     public void onPause() {
         super.onPause();
         if (session != null) {
-            // Note that the order matters - GLSurfaceView is paused first so that it does not try
-            // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
-            // still call session.update() and get a SessionPausedException.
-            //displayRotationHelper.onPause();
             surfaceView.onPause();
             session.pause();
         }
@@ -305,13 +262,13 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_FASTEST);
     }
 
-    // S i hay un cambi
+    //se calcula donde debe aparecer el objeto mediante la camara
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
-            float azimuth, pitch, bearing;
+            float bearing, azimuth, pitch;
             Range<Float> azimuthRange, pitchRange;
 
             float[] rotationMatrixFromVector = new float[16];
@@ -322,10 +279,12 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
             SensorManager.remapCoordinateSystem(rotationMatrixFromVector, SensorManager.AXIS_X, SensorManager.AXIS_Y, updatedRotationMatrix);
             SensorManager.getOrientation(updatedRotationMatrix, orientationValues);
 
+            //si no existen modelos cargados  finaliza el onSensorChanged
             if (modelsList.isEmpty()) {
                 return;
             }
 
+            //recorre la lista de modelos que se hayan obtenido del servidor
             for(DataModel dm: modelsList){
                 bearing = location.bearingTo(dm.location.location);
                 azimuth = (float) Math.toDegrees(orientationValues[0]);
@@ -334,12 +293,12 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
                 azimuthRange = new Range<>(bearing - 10, bearing + 10);
                 pitchRange = new Range<>(-90.0f, -45.0f);
 
+                //si se encuentra en dispositivo en rango de la posicion del modelo 3D, se le asigna la visivisibilidad del modelo 3D
                 if (azimuthRange.contains(azimuth) && pitchRange.contains(pitch)) {
                     dm.location.setVisible(true);
                 } else {
                     dm.location.setVisible(false);
                 }
-                Log.d("visible","es:" + dm.location.visible );
             }
         }
 
@@ -354,9 +313,9 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
     public void onLocationChanged(@NonNull Location location) {
         this.location = location;
 
+        //se calcula la distancia que exista entre la ubicacion de los objeto y la del dispositivo
         for(DataModel dm: modelsList){
             dm.location.setDistance(location.distanceTo(dm.location.location));
-            Log.d("distancia","distancia init:" + dm.location.distance);
         }
 
     }
@@ -401,77 +360,65 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
         try {
             session.setCameraTextureName(backgroundRenderer.getTextureId());
-            // Obtiene el frame actual de la ARSession. Cuando la  configuration is set to
-            // UpdateMode.BLOCKING (it is by default), this will throttle the rendering to the
-            // camera framerate.
+            // Obtiene el frame actual de la ARSession.
             Frame frame = session.update();
             Camera camera = frame.getCamera();
 
+            //pregunta si el dispositivo es compatible con la funcion de mprofundidad de ARcore
             if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
                 depthTexture.updateWithDepthImageOnGlThread(frame);
             }
 
+            //TODO: hacer algo con el toque
             // Un toque por frame, solo en el screen de camara
             handleTap(frame, camera);
 
             // Dibujar background.
-            //backgroundRenderer.draw(frame);
             backgroundRenderer.draw(frame, depthSettings.depthColorVisualizationEnabled());
 
-            // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
+            // Se mantiene la pantalla desbloqueada mientras exista el seguimiento.
             trackingStateHelper.updateKeepScreenOnFlag(camera.getTrackingState());
 
+            //Si el seguimiento se pausa muestra en pantalla un mensaje diciendo que sucedio
             if (camera.getTrackingState() == TrackingState.PAUSED) {
-                messageSnackbarHelper.showMessage(
-                        this, TrackingStateHelper.getTrackingFailureReasonString(camera));
+                messageSnackbarHelper.showMessage(this, TrackingStateHelper.getTrackingFailureReasonString(camera));
                 return;
             }
 
 
-            // Get projection matrix.
+            // Se obtienen una matrix projectada de la camara
             float[] projmtx = new float[16];
             camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
 
-            // Get camera matrix and draw.
+            // Se obtiene la matrix de la camara y dibuja en pantalla
             float[] viewmtx = new float[16];
             camera.getViewMatrix(viewmtx, 0);
 
-            // Compute lighting from average intensity of the image.
-            // The first three components are color scaling factors.
-            // The last one is the average pixel intensity in gamma space.
+            // Se calcula la intensidad de luz de la imagen obtenida por el frame.
             final float[] colorCorrectionRgba = new float[4];
             frame.getLightEstimate().getColorCorrection(colorCorrectionRgba, 0);
 
-            //escala los modelos 3D
+            // Se escalan los modelos 3D
             float scaleFactor = 0.1f;
             virtualObject.setUseDepthForOcclusion(this, depthSettings.useDepthForOcclusion());
 
-            //renderiza todos los modelos 3D asignando color
-            /*for (ColoredAnchor coloredAnchor : anchors) {
-                //if (coloredAnchor.anchor.getTrackingState() != TrackingState.TRACKING) {
-                //    continue;
-                //}
-                // Get the current pose of an Anchor in world space. The Anchor pose is updated
-                // during calls to session.update() as ARCore refines its estimate of the world.
-                coloredAnchor.anchor.getPose().toMatrix(anchorMatrix, 0);
-
-                // Update and draw the model and its shadow.
-                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
-                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba, coloredAnchor.color);
-            }*/
-
+            //renderiza todos los modelos 3D
             for (DataModel dm : modelsList) {
+
+                // Se pregunta si el modelo 3D deberia verse en pantalla
                 if(dm.location.visible) {
                     if (dm.location.zeroMatrix == null) {
                         dm.location.setZeroMatrix(getCalibrationMatrix(frame));
                     }
                 }
 
+                //en caso de que no exista una zeroMatrix para el modelo 3D, comienza con el siguiente modelo
                 if (dm.location.zeroMatrix == null) {
                     break;
                 }
 
                 Matrix.multiplyMM(viewmtx, 0, viewmtx, 0, dm.location.zeroMatrix, 0);
+
 
                 virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
                 virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba);
@@ -481,7 +428,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         }
         catch (Throwable t) {
             // para evitar bloquear la aplicación por excepciones no controladas.
-            Log.e(TAG, "Exception en el hilo del OpenGL", t);
+            Log.e(TAG, "Exception en el hilo de OpenGL", t);
         }
 
 
@@ -518,10 +465,10 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
             //si toco la pantalla se pone el objeto 3D
             //TODO: cambiarlo al cargar poir posicion y no por toque
             //Solo pueden existir 21 elemnentos en pantalla, si hay mas borra el primero que cargo, por tema de memoria
-            if (anchors.size() >= 20) {
-                anchors.get(0).anchor.detach();
-                anchors.remove(0);
-            }
+            //if (anchors.size() >= 20) {
+            //    anchors.get(0).anchor.detach();
+            //    anchors.remove(0);
+            //}
         }
     }
 }
