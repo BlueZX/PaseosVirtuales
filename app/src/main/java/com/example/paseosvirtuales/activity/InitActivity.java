@@ -30,6 +30,14 @@ public class InitActivity extends AppCompatActivity {
             }
         });
 
+        signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SignUpActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override

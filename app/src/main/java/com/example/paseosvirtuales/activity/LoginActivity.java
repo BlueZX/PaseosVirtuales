@@ -16,6 +16,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private ImageButton closeButton;
     private Button signInButton;
+    private Button signUpButton;
     private TextInputEditText emailET;
     private TextInputEditText passwordET;
 
@@ -28,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
         signInButton = findViewById(R.id.btn_login);
         emailET = findViewById(R.id.et_login_email);
         passwordET = findViewById(R.id.et_login_password);
+        signUpButton = findViewById(R.id.btn_go_signup);
 
         emailET.setText("ej@gmail.com");
         passwordET.setText("hola1234");
@@ -40,6 +42,14 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(view.getContext(), ARActivity.class);
                     startActivity(intent);
                 }
+            }
+        });
+
+        signUpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SignUpActivity.class);
+                startActivity(intent);
             }
         });
 

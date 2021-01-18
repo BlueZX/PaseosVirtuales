@@ -3,5 +3,12 @@
     <string name="init_description">Paseos virtuales es una aplicación que mediante la realidad aumentada (RA), permite la visualización de información histórica y objetos que solían existir en lugares patrimoniales.</string>
     <string name="no_account_init">¿Todavía no tienes una cuenta?</string>
     <string name="register_init">Registrate haciendo click aquí</string>
-
+    <string name="signup_title">Registrate</string>
+    <string name="signup">Registrarse</string>
+    <string name="already_account">Tienes una cuenta?</string>
+    <string name="signin_signup">Ingresa</string>
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="signin">Iniciar Sesión</string>
+    <string name="ingresar">Ingresar</string>
 </resources>

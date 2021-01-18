@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:layout_margin="0dp"
     android:background="@color/white"
-    tools:context=".activity.LoginActivity"
-    android:layout_gravity="center">
+    android:layout_gravity="center"
+    tools:context=".activity.SignUpActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
         android:orientation="vertical">
 
         <ImageButton
-            android:id="@+id/btn_close_login"
+            android:id="@+id/btn_close_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_close_36"
@@ -33,10 +33,10 @@
             android:layout_weight="10"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/tv_login"
+                android:id="@+id/tv_signup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/signin"
+                android:text="@string/signup"
                 android:textSize="50sp"
                 android:textColor="@color/black"
                 android:gravity="center_horizontal"/>
@@ -57,7 +57,7 @@
                 android:orientation="horizontal"
                 android:gravity="center">
                 <TextView
-                    android:id="@+id/tv_login_email"
+                    android:id="@+id/tv_signup_email"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -72,7 +72,7 @@
                     app:endIconMode="clear_text">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_login_email"
+                        android:id="@+id/et_signup_email"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress" />
@@ -88,7 +88,7 @@
                 android:layout_marginBottom="40dp">
 
                 <TextView
-                    android:id="@+id/tv_login_password"
+                    android:id="@+id/tv_signup_password"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -103,7 +103,7 @@
                     app:endIconMode="password_toggle">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_login_password"
+                        android:id="@+id/et_signup_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword" />
@@ -112,13 +112,13 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/btn_login"
+                android:id="@+id/btn_signup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:ems="11"
                 android:background="@drawable/button_animated"
-                android:text="@string/ingresar" />
+                android:text="@string/signup" />
         </LinearLayout>
 
         <LinearLayout
@@ -129,24 +129,24 @@
             android:layout_weight="0.1"
             android:gravity="center">
             <TextView
-                android:id="@+id/tv_no_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/no_account_init"
+                android:text="@string/already_account"
                 android:textSize="11sp"
                 android:textColor="@color/gray1"
                 android:gravity="center_horizontal"
                 tools:ignore="SmallSp" />
             <Button
-                android:id="@+id/btn_go_signup"
+                android:id="@+id/btn_go_login_signup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
                 android:textColor="@color/gray2"
                 android:background="@android:color/transparent"
-                android:text="@string/signup_title" />
+                android:text="@string/signin_signup" />
 
         </LinearLayout>
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
