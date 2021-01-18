@@ -2,6 +2,7 @@ package com.example.paseosvirtuales.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,10 +29,25 @@ public class LoginActivity extends AppCompatActivity {
         emailET = findViewById(R.id.et_login_email);
         passwordET = findViewById(R.id.et_login_password);
 
+        emailET.setText("ej@gmail.com");
+        passwordET.setText("hola1234");
+
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("login", emailET.getText() + ", " + passwordET.getText());
+                if(emailET.getText().toString().equals("ej@gmail.com") && passwordET.getText().toString().equals("hola1234")){
+                    Log.d("login", emailET.getText() + ", " + passwordET.getText());
+                    Intent intent = new Intent(view.getContext(), ARActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), InitActivity.class);
+                startActivity(intent);
             }
         });
     }
