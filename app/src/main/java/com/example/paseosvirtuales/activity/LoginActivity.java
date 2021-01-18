@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.example.paseosvirtuales.R;
+import com.example.paseosvirtuales.activity.AR.ARFragment;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
@@ -39,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(emailET.getText().toString().equals("ej@gmail.com") && passwordET.getText().toString().equals("hola1234")){
                     Log.d("login", emailET.getText() + ", " + passwordET.getText());
-                    Intent intent = new Intent(view.getContext(), ARActivity.class);
+                    Intent intent = new Intent(view.getContext(), ARFragment.class);
                     startActivity(intent);
                 }
             }

@@ -1,7 +1,9 @@
-package com.example.paseosvirtuales.activity;
+package com.example.paseosvirtuales.activity.AR;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,7 +18,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Range;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.renderscript.Float3;
 
@@ -45,6 +52,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.paseosvirtuales.R;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
@@ -63,12 +71,12 @@ import java.util.Objects;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class ARActivity extends AppCompatActivity implements GLSurfaceView.Renderer, SensorEventListener, LocationListener {
+public class ARFragment extends Fragment implements GLSurfaceView.Renderer, SensorEventListener, LocationListener {
 
-    private static final String TAG = ARActivity.class.getSimpleName();
+    private static final String TAG = ARFragment.class.getSimpleName();
 
     private final ObjectRenderer virtualObject = new ObjectRenderer();
-    private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
+    private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(getActivity());
     private final DepthSettings depthSettings = new DepthSettings();
     private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
     private final Texture depthTexture = new Texture();
@@ -91,18 +99,24 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ar);
+        View root = inflater.inflate(R.layout.fragment_ar, container, false);
+    /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getActivity().getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.TRANSPARENT);
+        }
+*/
+        surfaceView = root.findViewById(R.id.surfaceview);
 
-        surfaceView = findViewById(R.id.surfaceview);
-
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
 
         //TODO: llenar lista de modelos
         modelsList = new ArrayList<>();
 
-        String jsonFileString = getDataHelper.getJsonFromAssets(getApplicationContext(), "sampledata/dataObj.json");
+        String jsonFileString = getDataHelper.getJsonFromAssets(getActivity().getApplicationContext(), "sampledata/dataObj.json");
         assert jsonFileString != null;
         Log.i("dataJSON", jsonFileString);
 
@@ -127,26 +141,27 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         installRequested = false;
 
         // Configuracion de tocar pantalla
-        tapHelper = new TapHelper(/*context=*/ this);
+        tapHelper = new TapHelper(/*context=*/ getActivity());
         surfaceView.setOnTouchListener(tapHelper);
 
-        depthSettings.onCreate(this);
+        depthSettings.onCreate(getActivity());
 
         //interfaz
-        ImageButton settingsButton = findViewById(R.id.settings_button);
-        ImageButton backButton = findViewById(R.id.back_button);
+        ImageButton settingsButton = root.findViewById(R.id.settings_button);
+        ImageButton backButton = root.findViewById(R.id.back_button);
 
+        return root;
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
 
         if (session == null) {
             Exception exception = null;
             String message = null;
             try {
-                switch (ArCoreApk.getInstance().requestInstall(this, !installRequested)) {
+                switch (ArCoreApk.getInstance().requestInstall(getActivity(), !installRequested)) {
                     case INSTALL_REQUESTED:
                         installRequested = true;
                         return;
@@ -157,20 +172,20 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
                 handleSensor();
 
                 // Si no se tienen los permisos de localizacion, se solicitan
-                if (!LocationPermissionHelper.hasLocationPermission(this)) {
-                    LocationPermissionHelper.requestLocationPermission(this);
+                if (!LocationPermissionHelper.hasLocationPermission(getActivity())) {
+                    LocationPermissionHelper.requestLocationPermission(getActivity());
                 }else{
                     handleLocationServices();
                 }
 
                 // ARCore necesita permisos de camara para funcionar. Si es que todavia no lo tiene
-                if (!CameraPermissionHelper.hasCameraPermission(this)) {
-                    CameraPermissionHelper.requestCameraPermission(this);
+                if (!CameraPermissionHelper.hasCameraPermission(getActivity())) {
+                    CameraPermissionHelper.requestCameraPermission(getActivity());
                     return;
                 }
 
                 // Crear la sesión
-                session = new Session(/* context= */ this);
+                session = new Session(/* context= */ getActivity());
                 Config config = session.getConfig();
                 if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
                     config.setDepthMode(Config.DepthMode.AUTOMATIC);
@@ -197,7 +212,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
             }
 
             if (message != null) {
-                messageSnackbarHelper.showError(this, message);
+                messageSnackbarHelper.showError(getActivity(), message);
                 Log.e(TAG, "Exception creando la sesión", exception);
                 return;
             }
@@ -206,7 +221,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         try {
             session.resume();
         } catch (CameraNotAvailableException e) {
-            messageSnackbarHelper.showError(this, "La Camara no esta disponible. Intenta reiniciar la app.");
+            messageSnackbarHelper.showError(getActivity(), "La Camara no esta disponible. Intenta reiniciar la app.");
             session = null;
             return;
         }
@@ -216,12 +231,12 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
     private void handleLocationServices(){
         //si no se poseen los permisos de Localizacion finaliza
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
         try {
-            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+            LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
             //Se verifica que se tenga activado las funciones de GPS y el estado de su conexion a internet
             boolean flagGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -328,11 +343,11 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
         try {
             // Cree la textura y se lo pasa a la sesión de ARCore para que se llene durante el update().
             depthTexture.createOnGlThread();
-            backgroundRenderer.createOnGlThread(/*context=*/ this, depthTexture.getTextureId());
+            backgroundRenderer.createOnGlThread(/*context=*/ getActivity(), depthTexture.getTextureId());
             //planeRenderer.createOnGlThread(/*context=*/ this, "models/trigrid.png");
             //pointCloudRenderer.createOnGlThread(/*context=*/ this);
 
-            virtualObject.createOnGlThread(/*context=*/ this, "models/esca.obj", "models/esca.jpg");
+            virtualObject.createOnGlThread(/*context=*/ getActivity(), "models/esca.obj", "models/esca.jpg");
             virtualObject.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
             virtualObject.setDepthTexture(depthTexture.getTextureId(), depthTexture.getWidth(), depthTexture.getHeight());
             virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
@@ -381,7 +396,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
             //Si el seguimiento se pausa muestra en pantalla un mensaje diciendo que sucedio
             if (camera.getTrackingState() == TrackingState.PAUSED) {
-                messageSnackbarHelper.showMessage(this, TrackingStateHelper.getTrackingFailureReasonString(camera));
+                messageSnackbarHelper.showMessage(getActivity(), TrackingStateHelper.getTrackingFailureReasonString(camera));
                 return;
             }
 
@@ -400,7 +415,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
 
             // Se escalan los modelos 3D
             float scaleFactor = 0.1f;
-            virtualObject.setUseDepthForOcclusion(this, depthSettings.useDepthForOcclusion());
+            virtualObject.setUseDepthForOcclusion(getActivity(), depthSettings.useDepthForOcclusion());
 
             //renderiza todos los modelos 3D
             for (DataModel dm : modelsList) {
@@ -459,7 +474,7 @@ public class ARActivity extends AppCompatActivity implements GLSurfaceView.Rende
             Log.d("Touch","Toque");
 
             for(DataModel dm: modelsList){
-                messageSnackbarHelper.showMessageWithDismiss(this, "dispositivo:"+location.toString()+ ", objeto:"+ dm.location.location.toString());
+                messageSnackbarHelper.showMessageWithDismiss(getActivity(), "dispositivo:"+location.toString()+ ", objeto:"+ dm.location.location.toString());
             }
 
             //si toco la pantalla se pone el objeto 3D

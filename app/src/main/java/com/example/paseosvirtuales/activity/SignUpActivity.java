@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.example.paseosvirtuales.R;
+import com.example.paseosvirtuales.activity.AR.ARFragment;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -28,7 +29,7 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(), ARActivity.class);
+                Intent intent = new Intent(view.getContext(), ARFragment.class);
                 startActivity(intent);
             }
         });

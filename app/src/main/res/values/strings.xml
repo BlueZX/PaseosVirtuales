@@ -11,4 +11,7 @@
     <string name="password">Contraseña</string>
     <string name="signin">Iniciar Sesión</string>
     <string name="ingresar">Ingresar</string>
+    <string name="home">Inicio</string>
+    <string name="map">Ubicación</string>
+    <string name="ra">RA</string>
 </resources>
